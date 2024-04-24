@@ -18,3 +18,7 @@ globals "terraform" "backend" "azurerm" {
   storage_account_name = "tfstatexscz2"
   container_name       = "tfstate"
 }
+
+globals "azure" "oidc" {
+  repository = "terramate-io/terramate-quickstart-azure"
+}
