@@ -1,0 +1,95 @@
+name: Scheduled Terraform Drift Detection
+
+on:
+  schedule:
+    # Run this workflow at the top of every hour
+    - cron: '0 * * * *'
+
+jobs:
+  drift-detection:
+    name: Detect and reconcile drift in Terraform stacks
+
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+      checks: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      ### Check out the code
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      ### Install tooling
+
+      - name: Install Terramate
+        uses: terramate-io/terramate-action@v1
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v3
+
+      - name: Install Terraform with asdf
+        run: |
+          asdf plugin add terraform
+          asdf install terraform
+
+      ### Configure cloud credentials
+      
+      - name: 'Configure Azure credentials'
+        if: steps.list-changed.outputs.stdout
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify Azure credentials
+        if: steps.list-changed.outputs.stdout
+        run: |
+          az account show
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+
+      ### Run Dift Check
+
+      - name: Run Terraform init in all stacks
+        run: |
+          terramate script run \
+            -C stacks \
+            --parallel 1 \
+            terraform init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run drift detection
+        id: drift-detect
+        run: |
+          terramate script run \
+            -C stacks \
+            --parallel 5 \
+            --continue-on-error \
+            -- \
+            terraform drift detect
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run drift reconciliation
+        id: drift-reconcile
+        run: |
+          terramate script run \
+            -C stacks \
+            --tags reconcile \
+            --cloud-status=drifted \
+            --parallel 5 \
+            --continue-on-error \
+            -- \
+            terraform drift reconcile
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
