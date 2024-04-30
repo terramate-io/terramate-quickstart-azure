@@ -28,8 +28,8 @@ terramate {
     }
 
     # Enable Terramate Scripts
-    # experiments = [
-    #   "scripts",
-    # ]
+    experiments = [
+      "scripts",
+    ]
   }
 }
