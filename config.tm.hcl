@@ -10,6 +10,7 @@ globals "terraform" "providers" "azurerm" {
   features = {}
   config = {
     skip_provider_registration = false
+    use_oidc                   = true
   }
 }
 
