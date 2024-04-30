@@ -92,6 +92,10 @@ jobs:
             terraform init
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Plan Terraform changes in changed stacks
         if: steps.list-changed.outputs.stdout
@@ -105,6 +109,10 @@ jobs:
             terraform preview
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       ### Update Pull Request comment
 

@@ -64,6 +64,10 @@ jobs:
             terraform init
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run drift detection
         id: drift-detect
@@ -76,6 +80,10 @@ jobs:
             terraform drift detect
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run drift reconciliation
         id: drift-reconcile
@@ -90,3 +98,7 @@ jobs:
             terraform drift reconcile
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

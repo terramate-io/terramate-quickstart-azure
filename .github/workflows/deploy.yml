@@ -70,6 +70,10 @@ jobs:
             terraform init
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run Terraform apply in all changed stacks
         id: deploy
@@ -82,6 +86,10 @@ jobs:
             terraform deploy
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run drift detection in all deployed stacks
         if: steps.list-changed.outputs.stdout && ! cancelled() && steps.deploy.outcome != 'skipped'
@@ -93,3 +101,7 @@ jobs:
             terraform drift detect
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
