@@ -1,0 +1,107 @@
+name: Terraform Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Terraform changes in changed Terramate stacks
+
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+      checks: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      ### Check out the code
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      ### Install tooling
+
+      - name: Install Terramate
+        uses: terramate-io/terramate-action@v1
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v3
+
+      - name: Install Terraform with asdf
+        run: |
+          asdf plugin add terraform
+          asdf install terraform
+
+      ### Check for changed stacks
+
+      - name: List changed stacks
+        id: list-changed
+        run: terramate list -C stacks --changed
+
+      ### Configure cloud credentials
+      - name: 'Configure Azure credentials'
+        if: steps.list-changed.outputs.stdout
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify Azure credentials
+        if: steps.list-changed.outputs.stdout
+        run: |
+          az account show
+
+      ### Run the Terraform deployment via Terramate in each changed stack
+
+      - name: Run Terraform init in all changed stacks
+        if: steps.list-changed.outputs.stdout
+        run: |
+          terramate script run \
+            -C stacks \
+            --parallel 1 \
+            --changed \
+            terraform init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Terraform apply in all changed stacks
+        id: deploy
+        if: steps.list-changed.outputs.stdout
+        run: |
+          terramate script run \
+            -C stacks \
+            --parallel 5 \
+            --changed \
+            terraform deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run drift detection in all deployed stacks
+        if: steps.list-changed.outputs.stdout && ! cancelled() && steps.deploy.outcome != 'skipped'
+        run: |
+          terramate script run \
+            -C stacks \
+            --parallel 5 \
+            --changed \
+            terraform drift detect
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ARM_USE_OIDC: true
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
