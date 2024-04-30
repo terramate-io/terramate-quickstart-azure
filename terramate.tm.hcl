@@ -2,9 +2,9 @@ terramate {
   config {
 
     # Configure the namespace of your Terramate Cloud organization
-    # cloud {
-    #   organization = "terramate-demo"
-    # }
+    cloud {
+      organization = "terramate-demo"
+    }
 
     git {
       # default_remote = "origin"
