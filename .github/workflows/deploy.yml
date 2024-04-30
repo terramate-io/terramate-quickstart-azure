@@ -9,6 +9,9 @@ jobs:
   deploy:
     name: Deploy Terraform changes in changed Terramate stacks
 
+    environment:
+      name: dev
+
     permissions:
       id-token: write
       contents: read

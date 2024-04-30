@@ -9,6 +9,9 @@ jobs:
   drift-detection:
     name: Detect and reconcile drift in Terraform stacks
 
+    environment:
+      name: dev
+
     permissions:
       id-token: write
       contents: read
