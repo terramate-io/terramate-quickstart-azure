@@ -6,7 +6,7 @@ globals "terraform" "providers" "azurerm" {
   enabled = true
 
   source   = "hashicorp/azurerm"
-  version  = "~> 3.0.2"
+  version  = "~> 3.101.0"
   features = {}
   config = {
     skip_provider_registration = false
