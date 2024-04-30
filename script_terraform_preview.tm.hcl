@@ -6,7 +6,6 @@ script "terraform" "preview" {
     name        = "Terraform Plan"
     description = "Initialize, validate, and plan Terraform changes."
     commands = [
-      ["terraform", "init", "-lock-timeout=5m"],
       ["terraform", "validate"],
       ["terraform", "plan", "-out", "preview.tfplan", "-detailed-exitcode", "-lock=false", {
         cloud_sync_preview             = true
