@@ -54,9 +54,6 @@ jobs:
         run: |
           az account show
 
-      - name: Verify AWS credentials
-        run: aws sts get-caller-identity
-
       ### Run Dift Check
 
       - name: Run Terraform init in all stacks

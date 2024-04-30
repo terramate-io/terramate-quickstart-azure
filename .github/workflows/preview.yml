@@ -80,10 +80,6 @@ jobs:
         run: |
           az account show
 
-      - name: Verify AWS credentials
-        if: steps.list-changed.outputs.stdout
-        run: aws sts get-caller-identity
-
       ### Run the Terraform preview via Terramate in each changed stack
 
       - name: Run Terraform init in all changed stacks
