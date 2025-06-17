@@ -87,8 +87,16 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Check for auto reconcile
+        id: find-drifted
+        run: |
+          terramate list \
+            --status=drifted \
+            --tags reconcile
+
       - name: Run drift reconciliation
         id: drift-reconcile
+        if: steps.find-drifted.outputs.stdout
         run: |
           terramate script run \
             -C stacks \
